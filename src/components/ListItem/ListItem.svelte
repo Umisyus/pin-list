@@ -19,10 +19,11 @@
 	setContext('data', data);
 </script>
 
-<div class="ml-1" id="pin_select">
-	<!-- <input type="checkbox" name="pin_select" id="pin_select" /> -->
+<div class="m-auto" id="pin_select">
 	<!-- svelte-ignore a11y-missing-attribute -->
 	<!-- svelte-ignore a11y-interactive-supports-focus -->
+	<!-- svelte-ignore a11y-click-events-have-key-events -->
+	<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
 	<a
 		id="pin_select"
 		rel="noopener noreferrer"
@@ -30,55 +31,48 @@
 		aria-roledescription=""
 		role="button"
 	>
-		<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
-		<!-- svelte-ignore a11y-click-events-have-key-events -->
 		<img
 			on:click={() => {
-				// selected.push(pin);
-				// ++selectedCount;
 				isSelected = !isSelected;
-				console.log({ isSelected });
+				console.log({ id: pin.id, isSelected });
 			}}
 			class="
             border {isSelected ? 'border-emerald-200' : 'border-red-600'}
-            <!-- h-auto -->
-            max-w-md rounded-lg
-            m-auto"
+            rounded-lg
+            m-auto
+                  "
 			src={pin.url}
 			alt={pin.name}
 		/>
-		<p class="detail">
-			{pin.name}
-			{pin.board}
-			<!-- {pin.id} -->
-		</p>
+		<div class="details">
+			<p class="detail">
+				{pin.name}
+			</p>
+			<p class="detail">{pin.board}</p>
+		</div>
 	</a>
 </div>
 
 <style>
+	.details {
+		margin-top: -36%;
+	}
+
 	p.detail {
-		position: absolute;
+		position: relative;
 		text-align: center;
 		justify-content: center;
-		max-width: 10%;
-		margin-top: -3%;
-		margin-bottom: -10%;
-		margin-left: -1%;
-		margin-right: 6%;
-		/* margin: 10% -3% auto auto; */
+		margin: 1% auto;
+		min-width: min-content;
+		max-width: 100%;
+		word-wrap: break-word;
 	}
 
 	p.detail {
 		visibility: hidden;
 	}
 
-	input#pin_select {
-		position: absolute;
-		margin: 0% 0% 1% 6%;
-	}
-
 	a#pin_select {
-		/* position: absolute; */
 		margin: 0;
 		padding: 0%;
 	}
@@ -86,8 +80,7 @@
 		max-width: fit-content;
 	}
 
-    div#pin_select:hover p {
+	div#pin_select:hover p {
 		visibility: visible;
 	}
-
 </style>

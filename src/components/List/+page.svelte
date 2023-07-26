@@ -96,7 +96,7 @@
 	</div>
 </form>
 
-<section class="m-auto grid grid-cols-3 sm:grid-cols-7 gap-y-20">
+<section class="m-auto grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-7 gap-x-5 gap-y-20">
 	{#each data as pin}
 		<div class="" id="pin_select">
 			<ListItem data={pin} />
@@ -117,16 +117,3 @@
 		/>
 	</div>
 </section>
-
-<!-- <ul>
-	{#each data as pin}
-		<li>
-			{pin.name} <br />
-			{pin.board} <br />
-			{pin.username} <br />
-			{pin.url} <br />
-		</li>
-	{/each}
-</ul> -->
-<style>
-</style>
