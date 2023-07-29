@@ -30,7 +30,6 @@
 
 	$: profile = false;
 	$: search = false;
-	$: selectedCount = 0;
 
 	async function handleForm(e: { target: { action: any } }) {
 		// console.log({ formData });
@@ -51,12 +50,10 @@
 			}
 		}
 	}
-	$: selectedItems = [] as ExtractedPin[];
+	$: selectedItems = $list ?? ([] as ExtractedPin[]);
+	$: selectedCount = $list.length;
 
-	list.subscribe((val) => {
-		selectedItems = val;
-		selectedCount = val.length;
-	});
+	$: txt = selectedCount < 1 ? 'Select All' : 'Invert Selection';
 </script>
 
 <div class="btn-sm">Select many</div>
@@ -115,8 +112,7 @@
 			document.querySelectorAll('#pin_select').forEach((el) => {
 				el.parentElement?.click();
 			});
-			console.log({ selected: selectedItems });
-		}}>Select All</button
+		}}>{txt}</button
 	>
 	<button
 		class="btn variant-filled-surface"
@@ -127,10 +123,7 @@
 </div>
 <section class="m-auto grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-7 gap-x-5 gap-y-20">
 	{#each data as pin}
-		<div
-			class=""
-			id="pin_select"
-		>
+		<div class="" id="pin_select">
 			<ListItem data={pin} />
 		</div>
 	{/each}

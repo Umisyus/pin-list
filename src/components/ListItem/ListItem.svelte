@@ -26,25 +26,21 @@
 			$list = $list.filter((p) => p.id !== pin.id);
 		}
 	};
+
 </script>
 
 <div
 	class="m-auto"
 	id="pin_select"
 	on:click={() => {
-		console.log(`on click ${pin.id}`);
-
 		select(pin);
-		console.log(pin);
 	}}
 	role="button"
 	tabindex="0"
 	on:keydown={(e) => {
-		if (e.key === 'Enter') {
-			console.log(`on enter ${pin.id}`);
+		if (e.key === 'Enter' || e.key === 'backspace' || e.key === ' ' || e.key === 'Spacebar') {
 
 			select(pin);
-			console.log(pin.id);
 		}
 	}}
 >
