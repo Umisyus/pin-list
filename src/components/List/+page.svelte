@@ -1,6 +1,5 @@
 <script lang="ts">
 	import type { ExtractedPin } from '$lib/db/ExtractedPin';
-	import { GetPinData } from '$lib/db/GetPinData';
 	import { ListBox, ListBoxItem, Table, RadioGroup, RadioItem } from '@skeletonlabs/skeleton';
 	import '@skeletonlabs/skeleton/themes/theme-skeleton.css';
 	// Your selected Skeleton theme:
@@ -8,6 +7,7 @@
 	// This contains the bulk of Skeletons required styles:
 	import '@skeletonlabs/skeleton/styles/skeleton.css';
 	import ListItem from '../ListItem/ListItem.svelte';
+	import { list } from '$lib/pinStore';
 
 	let data: ExtractedPin[] = [
 		...new Array(100).fill(100).map((i) => ({
@@ -26,13 +26,9 @@
 	for (let index = 0; index < 50; index++) {
 		data.push(data[0]);
 	}
-	$: isSelected = false;
-	console.log({ data });
 
 	$: profile = false;
 	$: search = false;
-
-	$: selected = [] as any[];
 	$: selectedCount = 0;
 
 	async function handleForm(e: { target: { action: any } }) {
@@ -52,10 +48,14 @@
 			if (field && !search && !profile) {
 				alert('Please select an option.');
 			}
-			// data = data as ExtractedPin[];
-			console.log({ data });
 		}
 	}
+	let selectedItems: ExtractedPin[] = [];
+
+	list.subscribe((val) => {
+		selectedItems = val;
+		selectedCount = val.length;
+	});
 </script>
 
 <div class="btn-sm">Select many</div>
@@ -63,7 +63,7 @@
 	{selectedCount}
 </div>
 
-<form on:submit|preventDefault={handleForm} class="w-60 m-auto">
+<form on:submit|preventDefault={handleForm} class="w-72 space-x-10 m-auto">
 	<label for="term">
 		Search Term
 		<input
@@ -72,9 +72,12 @@
 			name="term"
 		/>
 	</label>
-
-	<input type="submit" class="btn variant-filled-surface m-100%" value="submit" />
-	<div>
+	<div class="w-10 m-auto" id="pin-list-form">
+		<style>
+			#pin-list-form {
+				margin: 0 auto;
+			}
+		</style>
 		<input
 			type="radio"
 			value="Profile"
@@ -94,8 +97,26 @@
 			}}
 		/>
 	</div>
+	<input type="submit" class="btn variant-filled-surface m-100%" value="submit" />
 </form>
-
+<div class="zbtn">
+	<style>
+		.zbtn {
+			position: fixed;
+			bottom: 0;
+			right: 0;
+			margin: 1rem;
+		}
+	</style>
+	<button
+		class="btn variant-filled-surface"
+		on:click={() => {
+			console.log({ selected: selectedItems });
+			// selectedItems = [];
+			// selectedCount = 0;
+		}}>Zip All</button
+	>
+</div>
 <section class="m-auto grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-7 gap-x-5 gap-y-20">
 	{#each data as pin}
 		<div class="" id="pin_select">

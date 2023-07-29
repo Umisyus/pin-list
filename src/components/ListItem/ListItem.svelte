@@ -1,6 +1,8 @@
 <script lang="ts">
 	import type { ExtractedPin } from '$lib/db/ExtractedPin';
 	import { setContext } from 'svelte';
+	import { list } from '$lib/pinStore';
+
 	export let data: ExtractedPin = {
 		board: 'BOARD-NAME',
 		name: 'IMAGE-NAME',
@@ -12,14 +14,40 @@
 		hash: '',
 		section: ''
 	};
+	let wasSelected = false;
 
-	let isSelected = false;
 	let pin = data as ExtractedPin;
 
-	setContext('data', data);
+	const select = (pin: ExtractedPin) => {
+		wasSelected = !wasSelected;
+		if (wasSelected) {
+			list.update((p) => [...p, pin]);
+		} else {
+			list.update((p) => p.filter((p) => p.id !== pin.id));
+		}
+	};
 </script>
 
-<div class="m-auto" id="pin_select">
+<div
+	class="m-auto"
+	id="pin_select"
+	on:click={() => {
+		console.log(`on click ${pin.id}`);
+
+		select(pin);
+		console.log(pin);
+	}}
+	role="button"
+	tabindex="0"
+	on:keydown={(e) => {
+		if (e.key === 'Enter') {
+			console.log(`on enter ${pin.id}`);
+
+			select(pin);
+			console.log(pin.id);
+		}
+	}}
+>
 	<!-- svelte-ignore a11y-missing-attribute -->
 	<!-- svelte-ignore a11y-interactive-supports-focus -->
 	<!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -32,12 +60,8 @@
 		role="button"
 	>
 		<img
-			on:click={() => {
-				isSelected = !isSelected;
-				console.log({ id: pin.id, isSelected });
-			}}
 			class="
-            border {isSelected ? 'border-emerald-200' : 'border-red-600'}
+            border {wasSelected ? 'border-emerald-200' : 'border-red-600'}
             rounded-lg
             m-auto
                   "
