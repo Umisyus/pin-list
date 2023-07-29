@@ -8,6 +8,7 @@
 	import '@skeletonlabs/skeleton/styles/skeleton.css';
 	import ListItem from '../ListItem/ListItem.svelte';
 	import { list } from '$lib/pinStore';
+	import { shortcut } from './shortcut';
 
 	let data: ExtractedPin[] = [
 		...new Array(100).fill(100).map((i) => ({
@@ -50,7 +51,7 @@
 			}
 		}
 	}
-	let selectedItems: ExtractedPin[] = [];
+	$: selectedItems = [] as ExtractedPin[];
 
 	list.subscribe((val) => {
 		selectedItems = val;
@@ -111,15 +112,25 @@
 	<button
 		class="btn variant-filled-surface"
 		on:click={() => {
+			document.querySelectorAll('#pin_select').forEach((el) => {
+				el.parentElement?.click();
+			});
 			console.log({ selected: selectedItems });
-			// selectedItems = [];
-			// selectedCount = 0;
+		}}>Select All</button
+	>
+	<button
+		class="btn variant-filled-surface"
+		on:click={() => {
+			console.log({ selected: selectedItems });
 		}}>Zip All</button
 	>
 </div>
 <section class="m-auto grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-7 gap-x-5 gap-y-20">
 	{#each data as pin}
-		<div class="" id="pin_select">
+		<div
+			class=""
+			id="pin_select"
+		>
 			<ListItem data={pin} />
 		</div>
 	{/each}

@@ -14,16 +14,16 @@
 		hash: '',
 		section: ''
 	};
-	let wasSelected = false;
+	export let wasSelected = false;
 
 	let pin = data as ExtractedPin;
 
 	const select = (pin: ExtractedPin) => {
 		wasSelected = !wasSelected;
 		if (wasSelected) {
-			list.update((p) => [...p, pin]);
+			$list = [...$list, pin];
 		} else {
-			list.update((p) => p.filter((p) => p.id !== pin.id));
+			$list = $list.filter((p) => p.id !== pin.id);
 		}
 	};
 </script>
