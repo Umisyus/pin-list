@@ -4,6 +4,14 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+dependencies:
+  pocketbase:
+    specifier: ^0.16.0
+    version: 0.16.0
+  prisma:
+    specifier: ^5.0.0
+    version: 5.0.0
+
 devDependencies:
   '@playwright/test':
     specifier: ^1.28.1
@@ -401,6 +409,11 @@ packages:
   /@polka/url@1.0.0-next.21:
     resolution: {integrity: sha512-a5Sab1C4/icpTZVzZc5Ghpz88yQtGOyNqYXcZgOssB2uuAr+wF/MvN6bgtW32q7HHrvBki+BsZ0OuNv6EV3K9g==}
     dev: true
+
+  /@prisma/engines@5.0.0:
+    resolution: {integrity: sha512-kyT/8fd0OpWmhAU5YnY7eP31brW1q1YrTGoblWrhQJDiN/1K+Z8S1kylcmtjqx5wsUGcP1HBWutayA/jtyt+sg==}
+    requiresBuild: true
+    dev: false
 
   /@skeletonlabs/skeleton@1.10.0(svelte@4.1.1):
     resolution: {integrity: sha512-6Cy1dzF6b2tMGxjFe60WOulN53tfvWMH+SDYoPMzNsRoa20vjlBMjLInWPJGn4dMuSJMiDrR9apniv16m0c9Rg==}
@@ -1675,6 +1688,10 @@ packages:
     hasBin: true
     dev: true
 
+  /pocketbase@0.16.0:
+    resolution: {integrity: sha512-sndPu4Mbu1Y2VefvO2gIa/No5aIdP6E5br9HUGomvDYSfkmGfBxJNkivJSSKlr9KwWnaF8otf14304UUeFGOrA==}
+    dev: false
+
   /postcss-import@15.1.0(postcss@8.4.27):
     resolution: {integrity: sha512-hpr+J05B2FVYUAXHeK1YyI267J/dDDhMU6B6civm8hSY1jYJnBXxzKDKDswzJmtLHryrjhnDjqqp/49t8FALew==}
     engines: {node: '>=14.0.0'}
@@ -1800,6 +1817,15 @@ packages:
     engines: {node: '>=10.13.0'}
     hasBin: true
     dev: true
+
+  /prisma@5.0.0:
+    resolution: {integrity: sha512-KYWk83Fhi1FH59jSpavAYTt2eoMVW9YKgu8ci0kuUnt6Dup5Qy47pcB4/TLmiPAbhGrxxSz7gsSnJcCmkyPANA==}
+    engines: {node: '>=16.13'}
+    hasBin: true
+    requiresBuild: true
+    dependencies:
+      '@prisma/engines': 5.0.0
+    dev: false
 
   /punycode@2.3.0:
     resolution: {integrity: sha512-rRV+zQD8tVFys26lAGR9WUuS4iUAngJScM+ZRSKtvl5tKeZ2t5bvdNFdNHBW9FWR4guGHlgmsZ1G7BSm2wTbuA==}

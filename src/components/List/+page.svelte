@@ -1,6 +1,5 @@
 <script lang="ts">
 	import type { ExtractedPin } from '$lib/db/ExtractedPin';
-	import { ListBox, ListBoxItem, Table, RadioGroup, RadioItem } from '@skeletonlabs/skeleton';
 	import '@skeletonlabs/skeleton/themes/theme-skeleton.css';
 	// Your selected Skeleton theme:
 	import '@skeletonlabs/skeleton/themes/theme-skeleton.css';
@@ -8,26 +7,46 @@
 	import '@skeletonlabs/skeleton/styles/skeleton.css';
 	import ListItem from '../ListItem/ListItem.svelte';
 	import { list } from '$lib/pinStore';
-	import { shortcut } from './shortcut';
+	import { pbStore } from '$lib/pinStore';
+	import { GetPinData } from '$lib/db/GetPinData';
+	let data: any[] = [];
 
-	let data: ExtractedPin[] = [
-		...new Array(100).fill(100).map((i) => ({
-			board: 'BOARD-NAME',
-			name: 'IMAGE-NAME',
-			url: 'https://images.unsplash.com/photo-1553184570-557b84a3a308?ixid=M3w0Njc5ODF8MHwxfGFsbHx8fHx8fHx8fDE2ODc5NzY2NTF8&ixlib=rb-4.0.3&w=128&h=128&auto=format&fit=crop',
-			username: '',
-			id: crypto.randomUUID(),
-			type: '',
-			ext: '',
-			hash: '',
-			section: ''
-		}))
-	] as ExtractedPin[];
+	(async () => {
+		let pins = await pbStore
+			.collection('pins')
+			.getList(1, 100)
+			.then((res) => {
+				console.log({ res });
+				return res.items;
+			})
+			.then((res) => {
+				return res.map((r) => GetPinData(r.pin));
+			})
+			.then((res) => {
+				return res.filter(Boolean);
+			});
 
-	for (let index = 0; index < 50; index++) {
-		data.push(data[0]);
-	}
+		data =
+			pins.length > 0
+				? (pins as unknown as ExtractedPin[])
+				: ([
+						...new Array(100).fill(100).map(() => ({
+							board: 'BOARD-NAME',
+							name: 'IMAGE-NAME',
+							url: 'https://images.unsplash.com/photo-1553184570-557b84a3a308?ixid=M3w0Njc5ODF8MHwxfGFsbHx8fHx8fHx8fDE2ODc5NzY2NTF8&ixlib=rb-4.0.3&w=128&h=128&auto=format&fit=crop',
+							username: '',
+							id: crypto.randomUUID(),
+							type: '',
+							ext: '',
+							hash: '',
+							section: ''
+						}))
+				  ] as ExtractedPin[]);
 
+		// for (let index = 0; index < 50; index++) {
+		// 	// data.push(data[0]);
+		// }
+	})();
 	$: profile = false;
 	$: search = false;
 
@@ -56,89 +75,76 @@
 	$: txt = selectedCount < 1 ? 'Select All' : 'Invert Selection';
 </script>
 
-<div class="btn-sm">Select many</div>
-<div class="">
-	{selectedCount}
-</div>
+<div class="flex flex-col">
+	<div class="btn-sm max-w-0">Select many</div>
+	<div class="max-w-0">
+		{selectedCount}
+	</div>
 
-<form on:submit|preventDefault={handleForm} class="w-72 space-x-10 m-auto">
-	<label for="term">
-		Search Term
-		<input
-			type="text"
-			class="input variant-filled-surface m-5 p-1 variant-outline-primary variant-filled-tertiary"
-			name="term"
-		/>
-	</label>
-	<div class="w-10 m-auto" id="pin-list-form">
+	<form
+		on:submit|preventDefault={handleForm}
+		class="my-0 mx-auto w-[100%] flex-shrink-0 flex-nowrap"
+	>
+		<label for="term" class="max-w-none">
+			Search Term
+			<input
+				type="text"
+				class="input variant-filled-surface m-5 p-1 max-w-xs variant-outline-primary variant-filled-tertiary"
+				name="term"
+			/>
+		</label>
+		<div class="max-w-xs" id="pin-list-form">
+			<input
+				type="radio"
+				value="Profile"
+				name="query"
+				on:change={() => {
+					profile = !profile;
+					console.log({ profile });
+				}}
+			/>
+			<input
+				type="radio"
+				name="query"
+				value="Search"
+				on:change={() => {
+					search = !search;
+					console.log({ search });
+				}}
+			/>
+		</div>
+		<input type="submit" class="btn variant-filled-surface" value="submit" />
+	</form>
+
+	<div class="zbtn">
 		<style>
-			#pin-list-form {
-				margin: 0 auto;
+			.zbtn {
+				position: fixed;
+				bottom: 0;
+				right: 0;
+				margin: 1rem;
 			}
 		</style>
-		<input
-			type="radio"
-			value="Profile"
-			name="query"
-			on:change={() => {
-				profile = !profile;
-				console.log({ profile });
-			}}
-		/>
-		<input
-			type="radio"
-			name="query"
-			value="Search"
-			on:change={() => {
-				search = !search;
-				console.log({ search });
-			}}
-		/>
+		<button
+			class="btn variant-filled-surface"
+			on:click={() => {
+				document.querySelectorAll('#pin_select').forEach((el) => {
+					el.parentElement?.click();
+				});
+			}}>{txt}</button
+		>
+		<button
+			class="btn variant-filled-surface"
+			on:click={() => {
+				console.log({ selected: selectedItems });
+			}}>Zip All</button
+		>
 	</div>
-	<input type="submit" class="btn variant-filled-surface m-100%" value="submit" />
-</form>
-<div class="zbtn">
-	<style>
-		.zbtn {
-			position: fixed;
-			bottom: 0;
-			right: 0;
-			margin: 1rem;
-		}
-	</style>
-	<button
-		class="btn variant-filled-surface"
-		on:click={() => {
-			document.querySelectorAll('#pin_select').forEach((el) => {
-				el.parentElement?.click();
-			});
-		}}>{txt}</button
-	>
-	<button
-		class="btn variant-filled-surface"
-		on:click={() => {
-			console.log({ selected: selectedItems });
-		}}>Zip All</button
-	>
+	<section class="m-auto grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-7 gap-x-5 gap-y-20">
+		{#each data as pin}
+			<div class="" id="pin_select">
+				<ListItem data={pin} />
+			</div>
+		{/each}
+	</section>
 </div>
-<section class="m-auto grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-7 gap-x-5 gap-y-20">
-	{#each data as pin}
-		<div class="" id="pin_select">
-			<ListItem data={pin} />
-		</div>
-	{/each}
-	<div>
-		<img
-			class="h-auto max-w-full rounded-lg"
-			src="https://images.unsplash.com/photo-1553184570-557b84a3a308?ixid=M3w0Njc5ODF8MHwxfGFsbHx8fHx8fHx8fDE2ODc5NzY2NTF8&ixlib=rb-4.0.3&w=128&h=128&auto=format&fit=crop"
-			alt="pin"
-		/>
-	</div>
-	<div>
-		<img
-			class="h-auto max-w-full rounded-lg"
-			src="https://images.unsplash.com/photo-1617296538902-887900d9b592?ixid=M3w0Njc5ODF8MHwxfGFsbHx8fHx8fHx8fDE2ODc5NzExMDB8&ixlib=rb-4.0.3&w=128&h=128&auto=format&fit=crop"
-			alt=""
-		/>
-	</div>
-</section>
