@@ -9,12 +9,19 @@
 	import { list } from '$lib/pinStore';
 	import { pbStore } from '$lib/pinStore';
 	import { GetPinData } from '$lib/db/GetPinData';
-	let data: any[] = [];
+	import { AsyncCompress, AsyncGzip, zip, zipSync } from 'fflate';
 
+	let data: any[] = [];
+	$: profile = false;
+	$: search = false;
+	$: selectedItems = $list ?? ([] as ExtractedPin[]);
+	$: selectedCount = $list.length;
+
+	$: txt = selectedCount < 1 ? 'Select All' : 'Invert Selection';
 	(async () => {
 		let pins = await pbStore
 			.collection('pins')
-			.getList(1, 100)
+			.getList<any>(1, 100)
 			.then((res) => {
 				console.log({ res });
 				return res.items;
@@ -42,13 +49,7 @@
 							section: ''
 						}))
 				  ] as ExtractedPin[]);
-
-		// for (let index = 0; index < 50; index++) {
-		// 	// data.push(data[0]);
-		// }
 	})();
-	$: profile = false;
-	$: search = false;
 
 	async function handleForm(e: { target: { action: any } }) {
 		// console.log({ formData });
@@ -69,11 +70,30 @@
 			}
 		}
 	}
-	$: selectedItems = $list ?? ([] as ExtractedPin[]);
-	$: selectedCount = $list.length;
+	async function generate_zip() {
+		let zipobj = {} as any;
 
-	$: txt = selectedCount < 1 ? 'Select All' : 'Invert Selection';
+		for await (const l of selectedItems) {
+			let img = await fetch(l.url, {
+				headers: {
+					'Access-Control-Allow-Origin': '*'
+				}
+			}).then((res) => res.blob());
+			const arrayBuffer = await img.arrayBuffer();
+			zipobj[l.name] = new Uint8Array(arrayBuffer);
+		}
+
+		let z = zipSync(zipobj);
+		let b = new Blob([z]);
+		let u = URL.createObjectURL(b);
+		let a = document.createElement('a');
+		a.href = u;
+		a.download = 'pins.zip';
+		a.click();
+	}
 </script>
+
+<img src="favicon.png" alt="" srcset="" />
 
 <div class="flex flex-col">
 	<div class="btn-sm max-w-0">Select many</div>
@@ -137,6 +157,7 @@
 			class="btn variant-filled-surface"
 			on:click={() => {
 				console.log({ selected: selectedItems });
+				generate_zip();
 			}}>Zip All</button
 		>
 	</div>
