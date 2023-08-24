@@ -10,24 +10,23 @@
 	import { pbStore } from '$lib/pinStore';
 	import { GetPinData } from '$lib/db/GetPinData';
 	import Spinner from './spinner.svelte';
-	import type { pindata } from '$lib/db/pin-data';
 
 	let data: any[] = [];
 	$: profile = false;
 	$: search = false;
 	$: selectedItems = $list ?? ([] as ExtractedPin[]);
 	$: selectedCount = $list.length;
-	$: filteredData = [];
+	var filteredData: any[] = [];
 	$: txt = selectedCount < 1 ? 'Select All' : 'Invert Selection';
 	$: runningAction = false;
-	$: selectedPage = 1;
+	let pins: ExtractedPin[] = [];
+	let searchTerm = '';
 
 	(async () => {
-		let pins: ExtractedPin[] = [];
 		try {
 			pins = (await pbStore
 				.collection('pins')
-				.getList<{ pin: any }>(1, 105)
+				.getList<{ pin: any }>(1, 150)
 				.then((res) => {
 					console.log({ res });
 					return res.items;
@@ -41,40 +40,17 @@
 		} catch (e) {
 			console.error({ e });
 		}
-
-		data =
-			pins?.length > 0
-				? (pins as unknown as ExtractedPin[])
-				: ([
-						...new Array(100).fill(100).map(() => ({
-							board: 'BOARD-NAME',
-							name: 'IMAGE-NAME',
-							url: 'https://images.unsplash.com/photo-1553184570-557b84a3a308?ixid=M3w0Njc5ODF8MHwxfGFsbHx8fHx8fHx8fDE2ODc5NzY2NTF8&ixlib=rb-4.0.3&w=128&h=128&auto=format&fit=crop',
-							username: '',
-							id: crypto.randomUUID(),
-							type: '',
-							ext: '',
-							hash: '',
-							section: ''
-						}))
-				  ] as ExtractedPin[]);
 	})();
 
-	const filterData = (term: HTMLInputElement) =>
-		(filteredData = data.filter((pin: ExtractedPin) => {
-			const input = (term as any).toLowerCase();
-			console.log({ input });
-			console.log(filteredData.length);
+	const filterData = (term: any) => {
+		searchTerm = term.target.value ?? '';
+		console.log({ searchTerm });
 
-			console.log(
-				pin.name,
-				pin.name.toLocaleLowerCase().includes(input),
-				pin.board,
-				pin.board.toLocaleLowerCase().includes(input)
-			);
-
-			return pin.board.toLowerCase().includes(input);
-		}));
+		filteredData = pins.filter((pin: ExtractedPin) => {
+			return pin.board.toLowerCase().includes(searchTerm.toLowerCase());
+		});
+		console.log({ filteredData });
+	};
 
 	async function handleForm(e: { target: { action: any } }) {
 		// console.log({ formData });
@@ -126,11 +102,7 @@
 		<label for="term" class="max-w-none">
 			Search Term
 			<input
-				on:keyup={(value) => {
-					console.log(value.target?.value);
-					console.log(filterData(value.target?.value));
-					filteredData = filterData(value.target?.value);
-				}}
+				on:input={filterData}
 				value=""
 				type="text"
 				class="input variant-filled-surface m-5 p-1 max-w-xs variant-outline-primary variant-filled-tertiary"
@@ -206,8 +178,8 @@
 		>
 	</div>
 	<section class="m-auto grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-7 gap-x-5 gap-y-20">
-		{#each filteredData.length > 0 ? filteredData : data as pin}
-			<div class="" id="pin_select">
+		{#each filteredData as pin}
+			<div id="pin_select">
 				<ListItem data={pin} />
 			</div>
 		{/each}

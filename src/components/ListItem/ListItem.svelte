@@ -3,7 +3,7 @@
 	import { setContext } from 'svelte';
 	import { list } from '$lib/pinStore';
 
-	export let data: ExtractedPin = {
+	export let data: ExtractedPin /* = {
 		board: 'BOARD-NAME',
 		name: 'IMAGE-NAME',
 		url: 'https://images.unsplash.com/photo-1553184570-557b84a3a308?ixid=M3w0Njc5ODF8MHwxfGFsbHx8fHx8fHx8fDE2ODc5NzY2NTF8&ixlib=rb-4.0.3&w=128&h=128&auto=format&fit=crop',
@@ -13,7 +13,7 @@
 		ext: '',
 		hash: '',
 		section: ''
-	};
+	}; */
 	export let wasSelected = false;
 
 	let pin = data as ExtractedPin;
