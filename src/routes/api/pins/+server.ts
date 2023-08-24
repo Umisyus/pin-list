@@ -16,7 +16,10 @@ export async function POST(request: RequestEvent) {
 
         // Create archive with images
         const zip = archiver.create('zip', { zlib: { level: 0 } })
+        zip.pipe(fs.createWriteStream('dummy.zip'));
+        let rs = fs.createReadStream('dummy.zip');
 
+        console.log({ zip, rs });
         for await (const pin of pins as ExtractedPin[]) {
             // console.log(pin.id);
             let { name, id, ext, board, url } = pin
@@ -30,7 +33,6 @@ export async function POST(request: RequestEvent) {
             console.log(`Adding ${nameExt}`);
             const image = await (await fetch(pin.url)).arrayBuffer().catch((console.error));
             if (image) {
-
                 const buffer = Buffer.from(image);
 
                 console.log(`downloaded ${buffer.length} bytes`);
@@ -57,14 +59,11 @@ export async function POST(request: RequestEvent) {
         // } as unknown as Response
 
         // pipe zip tp file
-        zip.pipe(fs.createWriteStream('dummy.zip'));
-        let rs = fs.createReadStream('dummy.zip');
 
-        console.log({ zip, rs });
         zip.end();
         // Works, but not as expected
         return new Response(
-            zip as unknown as ReadableStream<Uint8Array>,
+            rs as unknown as ReadableStream<Uint8Array>,
             {
                 status: 200,
                 headers: {
