@@ -9,7 +9,7 @@
 	import { list } from '$lib/pinStore';
 	import { pbStore } from '$lib/pinStore';
 	import { GetPinData } from '$lib/db/GetPinData';
-	import { AsyncCompress, AsyncGzip, zip, zipSync } from 'fflate';
+	import Spinner from './spinner.svelte';
 
 	let data: any[] = [];
 	$: profile = false;
@@ -18,23 +18,30 @@
 	$: selectedCount = $list.length;
 
 	$: txt = selectedCount < 1 ? 'Select All' : 'Invert Selection';
+	$: runningAction = false;
+
 	(async () => {
-		let pins = await pbStore
-			.collection('pins')
-			.getList<any>(1, 100)
-			.then((res) => {
-				console.log({ res });
-				return res.items;
-			})
-			.then((res) => {
-				return res.map((r) => GetPinData(r.pin));
-			})
-			.then((res) => {
-				return res.filter(Boolean);
-			});
+		let pins: ExtractedPin[] = [];
+		try {
+			pins = (await pbStore
+				.collection('pins')
+				.getList<any>(1, 100)
+				.then((res) => {
+					console.log({ res });
+					return res.items;
+				})
+				.then((res) => {
+					return res.map((r) => GetPinData(r.pin));
+				})
+				.then((res) => {
+					return res.filter(Boolean);
+				})) as unknown as ExtractedPin[];
+		} catch (e) {
+			console.error({ e });
+		}
 
 		data =
-			pins.length > 0
+			pins?.length > 0
 				? (pins as unknown as ExtractedPin[])
 				: ([
 						...new Array(100).fill(100).map(() => ({
@@ -54,42 +61,28 @@
 	async function handleForm(e: { target: { action: any } }) {
 		// console.log({ formData });
 		const formData = new FormData(<any>e.target);
-		const url = `http://localhost:3001/`;
+		const url = `http://localhost:3000/`;
 		for (const field of formData) {
 			console.log(field);
 			// data = <ExtractedPin[]>await (await fetch('http://localhost:3000/pins')).json();
 			if (field && profile) {
-				let rl = `${url}pins/profile/${field[1]}/`;
-				data = (await (await fetch(rl)).json()) as ExtractedPin[];
+				runningAction = true;
+				let rl = `${url}pin/profile/${field[1]}/`;
+				// data = (await (await fetch(rl)).json()) as ExtractedPin[];
+				data = await pbStore.collection('pins').getList(1, 100).then((res) => {
+					console.log({ res });
+					return res.items;
+				})
 			}
 			if (field && search) {
-				data = (await (await fetch(`${url}pins/search/${field[1]}/`)).json()) as ExtractedPin[];
+				runningAction = true;
+				data = (await (await fetch(`${url}pin/search/${field[1]}/`)).json()) as ExtractedPin[];
 			}
 			if (field && !search && !profile) {
 				alert('Please select an option.');
 			}
 		}
-	}
-	async function generate_zip() {
-		let zipobj = {} as any;
-
-		for await (const l of selectedItems) {
-			let img = await fetch(l.url, {
-				headers: {
-					'Access-Control-Allow-Origin': '*'
-				}
-			}).then((res) => res.blob());
-			const arrayBuffer = await img.arrayBuffer();
-			zipobj[l.name] = new Uint8Array(arrayBuffer);
-		}
-
-		let z = zipSync(zipobj);
-		let b = new Blob([z]);
-		let u = URL.createObjectURL(b);
-		let a = document.createElement('a');
-		a.href = u;
-		a.download = 'pins.zip';
-		a.click();
+		runningAction = false;
 	}
 </script>
 
@@ -105,6 +98,12 @@
 		on:submit|preventDefault={handleForm}
 		class="my-0 mx-auto w-[100%] flex-shrink-0 flex-nowrap"
 	>
+		{#if runningAction}
+			<div class="border-cyan-500">
+				LOADING...
+				<Spinner />
+			</div>
+		{/if}
 		<label for="term" class="max-w-none">
 			Search Term
 			<input
@@ -114,24 +113,30 @@
 			/>
 		</label>
 		<div class="max-w-xs" id="pin-list-form">
-			<input
-				type="radio"
-				value="Profile"
-				name="query"
-				on:change={() => {
-					profile = !profile;
-					console.log({ profile });
-				}}
-			/>
-			<input
-				type="radio"
-				name="query"
-				value="Search"
-				on:change={() => {
-					search = !search;
-					console.log({ search });
-				}}
-			/>
+			<label for="Profile">
+				<p>Profile</p>
+				<input
+					type="radio"
+					value="Profile"
+					name="query"
+					on:change={() => {
+						profile = !profile;
+						console.log({ profile });
+					}}
+				/>
+			</label>
+			<label for="Search">
+				<p>Search</p>
+				<input
+					type="radio"
+					name="query"
+					value="Search"
+					on:change={() => {
+						search = !search;
+						console.log({ search });
+					}}
+				/>
+			</label>
 		</div>
 		<input type="submit" class="btn variant-filled-surface" value="submit" />
 	</form>
@@ -155,9 +160,23 @@
 		>
 		<button
 			class="btn variant-filled-surface"
-			on:click={() => {
+			on:click={async () => {
 				console.log({ selected: selectedItems });
-				generate_zip();
+				// generate_zip();
+				const response = await fetch('/api/pins/', {
+					method: 'POST',
+					body: JSON.stringify({ pins: selectedItems }),
+					headers: {
+						'Content-Type': 'application/zip'
+					}
+				});
+				response.blob().then((blob) => {
+					const url = window.URL.createObjectURL(blob);
+					const a = document.createElement('a');
+					a.href = url;
+					a.download = 'pins.zip';
+					a.click();
+				});
 			}}>Zip All</button
 		>
 	</div>
