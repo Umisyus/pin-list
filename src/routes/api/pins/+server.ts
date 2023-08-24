@@ -2,7 +2,6 @@ import type { ExtractedPin } from "$lib/db/ExtractedPin";
 import type { RequestEvent } from "@sveltejs/kit";
 import * as archiver from "archiver";
 import * as fs from "fs";
-import { Stream } from "stream";
 
 export async function POST(request: RequestEvent) {
     // console.log({ request });
@@ -29,12 +28,17 @@ export async function POST(request: RequestEvent) {
             // const datablob = new Blob([buffer], { type: 'image/jpeg' });
             const nameExt = `${name}.${ext}`;
             console.log(`Adding ${nameExt}`);
-            const image = await (await fetch(pin.url)).arrayBuffer();
-            const buffer = Buffer.from(image);
+            const image = await (await fetch(pin.url)).arrayBuffer().catch((console.error));
+            if (image) {
 
-            console.log(`downloaded ${buffer.length} bytes`);
+                const buffer = Buffer.from(image);
 
-            zip.append(buffer, { name: nameExt })
+                console.log(`downloaded ${buffer.length} bytes`);
+
+                zip.append(buffer, { name: nameExt })
+            } else {
+                console.error(`no data for ${nameExt}!!!`);
+            }
         }
         console.log(`finalizing zip...`);
 
@@ -58,7 +62,7 @@ export async function POST(request: RequestEvent) {
 
         console.log({ zip, rs });
         zip.end();
-// Works, but not as expected
+        // Works, but not as expected
         return new Response(
             zip as unknown as ReadableStream<Uint8Array>,
             {
